@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -52,13 +53,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     };
     private Button login;
     private Button cancel;
+    public Switch switch1;
     public static EditText host, port, name, pass;
+    public static boolean haveCheck;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        haveCheck = false;
         //申请权限
         //verifyStoragePermissions(this);
         int hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -66,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
         }
         //初始化组件
+        switch1 = (Switch) findViewById(R.id.switch1);
         login = (Button) findViewById(R.id.login_button);
         cancel = (Button) findViewById(R.id.cancel_button);
         host = (EditText) findViewById(R.id.login_host);
@@ -75,11 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //添加点击函数
         login.setOnClickListener(this);
         cancel.setOnClickListener(this);
-//        File directory=new File(Environment.getExternalStorageDirectory().getPath().toString()+"/1ftpData");
-//        boolean  b=false;
-//        if(!directory.exists()){
-//            b=directory.mkdir();
-//        }
+        switch1.setOnClickListener(this);
 
     }
 
@@ -125,7 +125,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     "填写信息已清空",
                     Toast.LENGTH_LONG);
             tot.show();
-        }
+        } else if (v == findViewById(R.id.switch1)) {
+                haveCheck = !haveCheck;
+            }
+
     }
 
     //处理登录的异步函数
@@ -137,7 +140,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         protected Boolean doInBackground(String... Params) {
-            return checkLogin("10.0.1.5", 8001, 21, "CSR", "12345678");
+
+            if (haveCheck){
+                return checkLogin(8001);
+
+            }else
+            {
+                return nocheckLogin();
+            }
+
         }
 
         protected void onPostExecute(Boolean flag) {
@@ -177,15 +188,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //校验 只有edrm模块需要校验  其他模块直接登陆即可。
+    public boolean nocheckLogin() {
+        String host1 = host.getText().toString();
+        String user1 = name.getText().toString();
+        String pass1 = pass.getText().toString();
+        int port1 = Integer.parseInt(port.getText().toString());
+        boolean flag = false;
+        FTPManager manager = new FTPManager();
+        try {
+            flag = manager.connect(host1, port1, user1, pass1);
+            if (!flag) return flag;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            //最后不管是否连接上了 都关闭一下
+            try {
+                manager.closeFTP();
+            } catch (Exception e1) {
 
-    //校验
-    public boolean checkLogin(String host, int socketPort, int ftpPort21, String ftpUserCSR, String ftpsw) {
+            }
+            return flag;
+        }
+
+    }
+
+
+    //校验 只有edrm模块需要校验  其他模块直接登陆即可。
+    public boolean checkLogin(int socketPort) {
+        String host1 = host.getText().toString();
+        String user1 = name.getText().toString();
+        String pass1 = pass.getText().toString();
+        int port1 = Integer.parseInt(port.getText().toString());
+
         boolean flag = false;
         FTPManager manager = new FTPManager();
         try {
             // 创建Socket对象 & 指定服务端的IP 及 端口号
 //            socket = new Socket("10.0.1.5", 8001);
-            socket = new Socket(host, socketPort);
+            socket = new Socket(host1, socketPort);
 
             // 判断客户端和服务器是否连接成功
             System.out.println("连接" + socket.isConnected());
@@ -359,7 +400,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         try {
 //                            flag = manager.connect("10.0.1.5", 21, "CSR", "12345678");
-                            flag = manager.connect(host, ftpPort21, ftpUserCSR, ftpsw);
+                            flag = manager.connect(host1, port1, user1, pass1);
                             if (!flag) return false;
                             System.out.println("我的了flag：" + flag);
 

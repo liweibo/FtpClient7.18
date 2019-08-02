@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -29,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -52,7 +54,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
     Button bt;
     public Button bttest;
 
-
+    String parentPath = null;
     public static String dirpath;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -66,6 +68,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
     String mypathname;
     String localPath;
 
+    List<String> backDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +83,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         port = intent.getIntExtra("port", 21);
         bt = (Button) findViewById(R.id.parent);
         bt.setOnClickListener(selectFileActivity.this);
-
-
+        backDir = new ArrayList<>();
 
         /* 实例化各个控件 */
         lv = (ListView) findViewById(R.id.lv);
@@ -128,7 +130,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             }
 
         });
-
+//下载
         bttest.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -155,7 +157,6 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                     can[3] = pass;
 
                     //循环下载
-                    List<Boolean> booList = new ArrayList<>();
                     for (int i = 0; i < ItemChooseData.getFilePath().size(); i++) {
                         DownTask task = new DownTask(selectFileActivity.this, ItemChooseData.getFilePath().get(i));
                         System.out.println("下载：：" + ItemChooseData.getFilePath().get(i));
@@ -166,34 +167,29 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 } else {
                     Toast tot = Toast.makeText(
                             selectFileActivity.this,
-                            "请勾选需要下载的文件或文件夹！",
+                            "请勾选需要下载的文件！",
                             Toast.LENGTH_LONG);
                     tot.show();
                 }
 
             }
         });
-
-
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
                                     long arg3) {
                 if (currentFiles.get(arg2).isFile) {
+                    //点击的是文件  则勾选上。再点，则不勾选
                 } else {
                     //是文件夹
                     whileDir(arg2);
                 }
-
-
             }
         });
-
-
     }
 
 
-    public  void  whileDir(int arg2) {
+    public void whileDir(int arg2) {
         String can[] = new String[5];
         can[0] = host;
         can[1] = new Integer(port).toString();
@@ -214,10 +210,11 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
 
     @Override
     public void onClick(View view) {
-        if (currentParent.equals("") && currentFiles == null) {
+//        if (currentParent.equals("") && currentFiles == null) {
+        if (backDir.size() - 2 < 0) {
             new AlertDialog.Builder(this)
                     .setTitle("提示")
-                    .setMessage("这已经是最前面的文件夹了！")
+                    .setMessage("已经是顶级目录！")
                     .setPositiveButton("确定", null)
                     .show();
         } else {
@@ -227,11 +224,30 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             can[1] = portStr;
             can[2] = user;
             can[3] = pass;
-            can[4] = currentParent;
-            GetTask task = new GetTask(this);
+//            can[4] = currentParent;
+
+
+            can[4] = backDir.get(backDir.size() - 2);
+
+
+            GetTaskBackDir task = new GetTaskBackDir(this);
             task.execute(can);
             ItemChooseData.getFilePath().clear();
+
+
+            checkbox_all.setChecked(false);//跳到上级目录，自动设为全不选
+            for (int i = 0; i < currentFiles.size(); i++) {
+                if (!MyAdapter.isSelected.get(i)) {
+                    checkbox_all.setChecked(false);
+                }
+            }
+
+
+//            currentFiles = null;
+            backDir.remove(backDir.size() - 1);
+
         }
+
     }
 
     // 初始化数据
@@ -273,12 +289,42 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             try {
                 util.connectServer(host, port, user, pass, "");
                 list = util.getFileList(path);
+                if (list.size() > 0) {
+                    backDir.add(path);//每次点击文件夹进入下级目录时，都记录父路径
+                }
                 //附带父亲文件夹的路径进去
                 list.add(new FtpUtils.wxhFile(path, "", 2));
-                for (int i = 0; i < list.size(); i++) {
-                    System.out.println("测试--"+list.get(i).filePath+"---"+list.get(i).filename);
 
+
+                System.out.println("backDir:" + backDir.toString());
+                List<FtpUtils.wxhFile> listFile = new ArrayList<>();
+                List<FtpUtils.wxhFile> listDir = new ArrayList<>();
+
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).isParent) {
+                        parentPath = list.get(i).filePath;
+                        list.remove(i);
+                    }
                 }
+                System.out.println("刚开始的个数：" + list.size());
+                List<FtpUtils.wxhFile> removeFileIndex = new ArrayList<>();
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).isFile) {//是文件
+                        listFile.add(list.get(i));
+                        removeFileIndex.add(list.get(i));//记住待删除的文件对象。
+                    }
+                }
+                System.out.println("文件个数：" + listFile.size());
+
+
+                for (int i = 0; i < removeFileIndex.size(); i++) {
+                    list.remove(removeFileIndex.get(i));//删除所有的文件
+                }
+
+                System.out.println("文件夹个数：" + list.size());
+                list.addAll(listFile);//文件夹与文件集合的拼接
+                System.out.println("拼接后个数：" + list.size());
+
             } catch (Exception e) {
                 System.out.println("开启连接出错");
                 e.printStackTrace();
@@ -294,27 +340,17 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         }
 
         protected void onPostExecute(List<FtpUtils.wxhFile> list) {
-            String parentPath = null;
-            for (int i = 0; i < list.size(); i++) {
-                if (list.get(i).isParent) {
-                    parentPath = list.get(i).filePath;
-                    list.remove(i);
-                }
-            }
-
-
             SharedPreferences pref = selectFileActivity.this.getSharedPreferences("mypath", MODE_PRIVATE);
             SharedPreferences.Editor editor = pref.edit();
             editor.putString("pathname", parentPath);
             editor.commit();
-
             System.out.println("这个父亲文件夹为：" + parentPath);
             System.out.println("处理结果函数内部");
             if (list == null || list.size() == 0) {
                 System.out.println("空文件夹或者访问出错");
                 new AlertDialog.Builder(mContext)
                         .setTitle("提示")
-                        .setMessage("这个文件夹是个空文件夹！")
+                        .setMessage("该文件夹为空文件夹！")
                         .setPositiveButton("确定", null)
                         .show();
 
@@ -322,6 +358,108 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 System.out.println("找到了！！");
                 //更新文件list
                 currentFiles = list;
+                System.out.println("刚开始的父路径：" + list.get(0).filePath);
+                //调用刷新来显示我们的列表
+//                inflateListView(list,parentPath);
+
+                // 实例化自定义的MyAdapter
+                mAdapter = new MyAdapter(list, selectFileActivity.this);
+                // 绑定Adapter
+                lv.setAdapter(mAdapter);
+            }
+
+        }
+    }
+
+
+    class GetTaskBackDir extends AsyncTask<String, Void, List<FtpUtils.wxhFile>> {
+        Context mContext;
+
+        public GetTaskBackDir(Context ctx) {
+            mContext = ctx;
+        }
+
+        protected List<FtpUtils.wxhFile> doInBackground(String... Params) {
+            String host = Params[0];
+            String portStr = Params[1];
+            String user = Params[2];
+            String pass = Params[3];
+            String path = Params[4];
+            FtpUtils util = new FtpUtils();
+            List<FtpUtils.wxhFile> list = null;
+            int port = 21;
+            port = Integer.parseInt(portStr);
+            try {
+                util.connectServer(host, port, user, pass, "");
+                list = util.getFileList(path);
+
+                //附带父亲文件夹的路径进去
+                list.add(new FtpUtils.wxhFile(path, "", 2));
+
+
+                System.out.println("backDir:" + backDir.toString());
+                List<FtpUtils.wxhFile> listFile = new ArrayList<>();
+                List<FtpUtils.wxhFile> listDir = new ArrayList<>();
+
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).isParent) {
+                        parentPath = list.get(i).filePath;
+                        list.remove(i);
+                    }
+                }
+                System.out.println("刚开始的个数：" + list.size());
+                List<FtpUtils.wxhFile> removeFileIndex = new ArrayList<>();
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).isFile) {//是文件
+                        listFile.add(list.get(i));
+                        removeFileIndex.add(list.get(i));//记住待删除的文件对象。
+                    }
+                }
+                System.out.println("文件个数：" + listFile.size());
+
+
+                for (int i = 0; i < removeFileIndex.size(); i++) {
+                    list.remove(removeFileIndex.get(i));//删除所有的文件
+                }
+
+                System.out.println("文件夹个数：" + list.size());
+                list.addAll(listFile);//文件夹与文件集合的拼接
+                System.out.println("拼接后个数：" + list.size());
+
+            } catch (Exception e) {
+                System.out.println("开启连接出错");
+                e.printStackTrace();
+            } finally {
+                try {
+                    util.closeServer();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    ;
+                }
+                return list;
+            }
+        }
+
+        protected void onPostExecute(List<FtpUtils.wxhFile> list) {
+            SharedPreferences pref = selectFileActivity.this.getSharedPreferences("mypath", MODE_PRIVATE);
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putString("pathname", parentPath);
+            editor.commit();
+            System.out.println("这个父亲文件夹为：" + parentPath);
+            System.out.println("处理结果函数内部");
+            if (list == null || list.size() == 0) {
+                System.out.println("空文件夹或者访问出错");
+                new AlertDialog.Builder(mContext)
+                        .setTitle("提示")
+                        .setMessage("该文件夹为空文件夹！")
+                        .setPositiveButton("确定", null)
+                        .show();
+
+            } else {
+                System.out.println("找到了！！");
+                //更新文件list
+                currentFiles = list;
+                System.out.println("刚开始的父路径：" + list.get(0).filePath);
                 //调用刷新来显示我们的列表
 //                inflateListView(list,parentPath);
 
@@ -359,6 +497,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         protected void onProgressUpdate(Long... values) {
             long a = Long.valueOf(values[0].toString());
             int value = (int) a;
+            System.out.println("进度：" + value);
             pdialog.setProgress(value);
         }
 
@@ -396,12 +535,9 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             try {
                 ftpClient.setDataTimeout(6000);//设置连接超时时间
                 ftpClient.setControlEncoding("utf-8");
-                System.out.println("登录前");
-
                 ftpClient.connect(host, port);
 
                 flag = ftpClient.login(user, pass);
-                System.out.println("登录后");
                 if (!flag) return flag;
                 FTPFile[] files = ftpClient.listFiles(myserverPath);
                 if (files.length == 0) {
@@ -419,6 +555,9 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 System.out.println("我的localPath：" + localPath);
                 // 接着判断下载的文件是否能断点下载
                 long serverSize = files[0].getSize(); // 获取远程文件的长度
+
+                System.out.println("文件长度：" + serverSize);
+
                 File localFile = new File(localPath);
                 System.out.println("localFile：" + localFile);
                 long localSize = 0;
@@ -448,6 +587,10 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                     currentSize = currentSize + length;
                     if (currentSize / step != process) {
                         process = currentSize / step;//下载的百分比
+
+//                        System.out.println("文件已下载："+process);
+
+
                         publishProgress(process);
                     }
                 }
@@ -474,7 +617,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             if (flag) {
                 Toast tot = Toast.makeText(
                         mContext,
-                        "文件下载成功,保存在本地存储目录下的1ftpData文件夹",
+                        "文件下载成功!",
                         Toast.LENGTH_LONG);
                 tot.show();
             } else {
@@ -494,15 +637,23 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
 
         int length = folder.length;
         String genFolder = Environment.getExternalStorageDirectory().getPath().toString() +
-                File.separator + "EDRMdata" + File.separator;
-
-        File file, file2;
+                File.separator + "CRRC" + File.separator;
+        File file, file2, file3;
         file2 = new File(genFolder);
         if (!file2.exists()) {
             file2.mkdir();
         }
 
-        String str = genFolder;
+
+        String genFolder1 = genFolder +
+                File.separator + "DOWNLOAD" + File.separator;
+        file3 = new File(genFolder1);
+        if (!file3.exists()) {
+            file3.mkdir();
+        }
+
+
+        String str = genFolder1;
         for (int i = 0; i < length; i++) {
 
             str = str + folder[i] + "/";

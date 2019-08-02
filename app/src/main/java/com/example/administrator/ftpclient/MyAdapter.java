@@ -77,6 +77,7 @@ public class MyAdapter extends BaseAdapter {
             holder.tv = (TextView) convertView.findViewById(R.id.item_tv);
             holder.im = (ImageView) convertView.findViewById(R.id.file_icon);
             holder.cb = (CheckBox) convertView.findViewById(R.id.item_cb);
+            holder.arro = (ImageView) convertView.findViewById(R.id.arrow);
 
             // 为view设置标签
             convertView.setTag(holder);
@@ -88,6 +89,15 @@ public class MyAdapter extends BaseAdapter {
         // 设置list中TextView的显示
         holder.tv.setText(list.get(position).filename);
 
+        if (list.get(position).isFile) {
+            holder.im.setImageResource(R.mipmap.document);
+        } else {
+            holder.im.setImageResource(R.mipmap.folder);
+            holder.cb.setVisibility(View.INVISIBLE);
+            holder.arro.setVisibility(View.VISIBLE);
+        }
+
+
         // 根据isSelected来设置checkbox的选中状况
         holder.cb.setChecked(getIsSelected().get(position));
         holder.cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -96,20 +106,24 @@ public class MyAdapter extends BaseAdapter {
                                                      if (!b) {
                                                          System.out.println("监测。。。");
                                                          //没选中的item，则从记录中删除对应的index
-                                                         ItemChooseData.removeIndex(position);
-
-                                                         ItemChooseData.removeFilePath(position);
-
+                                                         if (selectFileActivity.currentFiles.get(position).isFile){
+                                                             ItemChooseData.removeIndex(position);
+                                                             ItemChooseData.removeFilePath(position);
+                                                         }
                                                          System.out.println("q1:"+ItemChooseData.getFilePath().toString());
                                                          System.out.println("位置1："+position);
                                                      } else {//选中的item，则记录他的index
-                                                         ItemChooseData.addIndex(position);
-                                                         ItemChooseData.addFilePath(selectFileActivity.currentFiles.get(position).filePath);
+                                                         //记录前，先判断选择的是否是文件，是则记录。非文件不记录
+                                                         if (selectFileActivity.currentFiles.get(position).isFile){
+                                                             ItemChooseData.addIndex(position);
+                                                             ItemChooseData.addFilePath(selectFileActivity.currentFiles.get(position).filePath);
+                                                         }
+
 
                                                          //当选中的是文件夹时：
-                                                         if (selectFileActivity.currentFiles.get(position).isParent){
-                                                           new   selectFileActivity().whileDir(position);
-                                                         }
+//                                                         if (selectFileActivity.currentFiles.get(position).isParent){
+//                                                           new   selectFileActivity().whileDir(position);
+//                                                         }
 
                                                          System.out.println("位置2："+position);
                                                          System.out.println("q2:"+ItemChooseData.getFilePath().toString());
@@ -118,12 +132,7 @@ public class MyAdapter extends BaseAdapter {
                                                  }
                                              }
         );
-        if (list.get(position).isFile) {
-            holder.im.setImageResource(R.mipmap.document);
-        } else {
-            holder.im.setImageResource(R.mipmap.folder);
-            holder.cb.setVisibility(View.INVISIBLE);
-        }
+
         return convertView;
     }
 
@@ -139,5 +148,6 @@ public class MyAdapter extends BaseAdapter {
         public TextView tv;
         public CheckBox cb;
         public ImageView im;
+        public ImageView arro;
     }
 }

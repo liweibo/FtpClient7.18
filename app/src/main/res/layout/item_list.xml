@@ -23,9 +23,26 @@
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="10dp"
             android:layout_weight="1"
-            android:text="@string/app_name"
+            android:text=""
             android:textSize="20dp" />
-
+        <TextView
+            android:id="@+id/item_pb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dp"
+            android:text=""
+            android:textColor="#0097A7"
+            android:textSize="20dp" />
+        <TextView
+            android:id="@+id/item_pbpercent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dp"
+            android:text="%"
+            android:textColor="#0097A7"
+            android:textSize="20dp" />
         <CheckBox
             android:id="@+id/item_cb"
             android:layout_width="wrap_content"

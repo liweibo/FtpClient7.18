@@ -96,6 +96,36 @@ public class FtpUtils {
         return fileLists;
     }
 
+
+
+    public List<wxhFile> firstgetFileList() throws ParseException {
+        List<wxhFile> fileLists = new ArrayList<wxhFile>();
+        // 获得指定目录下所有文件名
+        FTPFile[] ftpFiles = null;
+        try {
+            ftpFiles = ftpClient.listFiles();//区别在这里，没有参数。
+            System.out.println(ftpFiles.length+"长度");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for (int i = 0; ftpFiles != null && i < ftpFiles.length; i++) {
+            FTPFile file = ftpFiles[i];
+            if (file.isFile()) {
+                System.out.println("文件夹下面的文件first=====" + file.getName());
+                wxhFile a = new wxhFile("" + file.getName(), file.getName(), 1);
+                fileLists.add(a);
+            } else if (file.isDirectory()) {
+                String name = file.getName();
+                if (name.equals(".") || name.equals("..")) continue;
+                System.out.println("文件夹名称为first=====" + name);
+                wxhFile a = new wxhFile("" + file.getName(), file.getName(), 0);
+                fileLists.add(a);
+            }
+        }
+
+        return fileLists;
+    }
+
     /**
      * @param fileName
      * @return function:从服务器上读取指定的文件

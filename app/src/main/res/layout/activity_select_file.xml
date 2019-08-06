@@ -34,23 +34,40 @@
         android:id="@+id/lv"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/llbtn" />
+        android:layout_below="@+id/tv_suc" />
+
     <LinearLayout
-        android:layout_below="@+id/lll"
         android:id="@+id/llbtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/lll"
         android:orientation="horizontal">
+
         <Button
             android:id="@+id/bttest"
-            android:text="下载"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="下载" />
+
         <Button
             android:id="@+id/parent"
-            android:text="返回上级目录"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="返回上级目录" />
+
+        <TextView
+            android:id="@+id/tv_jindu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="11" />
     </LinearLayout>
 
+    <TextView
+
+        android:layout_below="@+id/llbtn"
+        android:id="@+id/tv_suc"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:text="11000" />
 </RelativeLayout>

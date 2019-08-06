@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,6 +32,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.IntStream;
 
 import org.apache.commons.net.ftp.FTP;
@@ -37,6 +41,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 
 public class selectFileActivity extends AppCompatActivity implements OnClickListener {
+    int countValue;
+    String downloadingFileName;
     String host, user, pass;
     int port;
     String currentParent = "";
@@ -44,16 +50,22 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
     private MyAdapter mAdapter;
     private List<FtpUtils.wxhFile> list;
     public static List<FtpUtils.wxhFile> currentFiles = null;
+    public static List<FtpUtils.wxhFile> movingList = null;
 
     private int checkNum; // 记录选中的条目数量
     private TextView tv_show;// 用于显示选中的条目数量
     private TextView tv_file_folder;
+    private TextView tv_jindu;
+    private TextView tv_suc;
+
     private TextView tv_result;//用来显示具体选择的条目
     private List<Integer> checkList = new ArrayList<>();
     public static CheckBox checkbox_all;
     Button bt;
     public Button bttest;
-
+    boolean downSucOrFail;
+    int countDown = 0;
+    String downString = "";
     String parentPath = null;
     public static String dirpath;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -81,6 +93,9 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         user = intent.getStringExtra("user");
         pass = intent.getStringExtra("pass");
         port = intent.getIntExtra("port", 21);
+
+        tv_jindu = (TextView) findViewById(R.id.tv_jindu);
+        tv_suc = (TextView) findViewById(R.id.tv_suc);
         bt = (Button) findViewById(R.id.parent);
         bt.setOnClickListener(selectFileActivity.this);
         backDir = new ArrayList<>();
@@ -104,10 +119,20 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
     public void onBackPressed() {
         super.onBackPressed();
         ItemChooseData.getFilePath().clear();
+        ItemChooseData.getFileName().clear();
         System.out.println("按下了back键   onBackPressed()");
     }
 
     public void setClick() {
+
+        tv_suc.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                tv_suc.setText("mime1:" + ItemChooseData.fileDownloadSucOrFail.size());
+            }
+        });
+
+
         //全选
         checkbox_all.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -137,12 +162,12 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 if (ItemChooseData.getFilePath().size() > 0) {
                     List<Integer> listIndex = ItemChooseData.getIndexArr();
                     for (int i = 0; i < listIndex.size(); i++) {
-                        String filename = currentFiles.get(listIndex.get(i)).filename;
+//                        String filename = currentFiles.get(listIndex.get(i)).filename;
 
-                        String filePath = currentFiles.get(listIndex.get(i)).filePath;
+//                        String filePath = currentFiles.get(listIndex.get(i)).filePath;
 //                        ItemChooseData.addFilePath(filePath);
-                        System.out.println("测试文件名：" + filename);
-                        System.out.println("测试文件路径：" + filePath);
+//                        System.out.println("测试文件名：" + filename);
+//                        System.out.println("测试文件路径：" + filePath);
                     }
                     System.out.println("测试文件路径汇总：" + ItemChooseData.getFilePath().toString());
 
@@ -158,10 +183,27 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
 
                     //循环下载
                     for (int i = 0; i < ItemChooseData.getFilePath().size(); i++) {
-                        DownTask task = new DownTask(selectFileActivity.this, ItemChooseData.getFilePath().get(i));
+                        downString = "";
+                        DownTask task = new DownTask(selectFileActivity.this, ItemChooseData.getFilePath().get(i),
+                                ItemChooseData.getFileName().get(i), i
+                        );
+//                        ItemChooseData.listFilename.get(i).replace(ItemChooseData.listFilename.get(i),
+//                                ItemChooseData.listFilename.get(i)+" "+countValue+"%");
                         System.out.println("下载：：" + ItemChooseData.getFilePath().get(i));
+                        System.out.println("下载121：：" + ItemChooseData.getFilePath());
+
                         task.execute(can);
+
+
                     }
+
+//
+//                    System.out.println("size1：" + ItemChooseData.getDownloadSucOrFail().size());
+//
+//                    for (int i = 0; i < ItemChooseData.getDownloadSucOrFail().size(); i++) {
+//                        String ex = ItemChooseData.getDownloadSucOrFail().get(i).toString();
+//                        System.out.println("测试size：" + ex);
+//                    }
 
 
                 } else {
@@ -200,6 +242,8 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         GetTask task = new GetTask(selectFileActivity.this);
         task.execute(can);
         checkbox_all.setChecked(false);//跳到下级目录，自动设为全不选
+        ItemChooseData.getFilePath().clear();
+        ItemChooseData.getFileName().clear();
         for (int i = 0; i < currentFiles.size(); i++) {
             if (!MyAdapter.isSelected.get(i)) {
                 checkbox_all.setChecked(false);
@@ -233,7 +277,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             GetTaskBackDir task = new GetTaskBackDir(this);
             task.execute(can);
             ItemChooseData.getFilePath().clear();
-
+            ItemChooseData.getFileName().clear();
 
             checkbox_all.setChecked(false);//跳到上级目录，自动设为全不选
             for (int i = 0; i < currentFiles.size(); i++) {
@@ -258,7 +302,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         can[1] = portStr;
         can[2] = user;
         can[3] = pass;
-        can[4] = "";
+        can[4] = "/";
         GetTask task = new GetTask(this);
         task.execute(can);
     }
@@ -358,12 +402,23 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 System.out.println("找到了！！");
                 //更新文件list
                 currentFiles = list;
+
+                movingList = list;
+
                 System.out.println("刚开始的父路径：" + list.get(0).filePath);
                 //调用刷新来显示我们的列表
 //                inflateListView(list,parentPath);
 
+//                for (int i = 0; i < movingList.size(); i++) {
+//                    if (movingList.get(i).filename == downloadingFileName) {
+//                        movingList.get(i).filename = movingList.get(i).filename + " " + countValue + "%";
+//
+//                    }
+//                }
+
+
                 // 实例化自定义的MyAdapter
-                mAdapter = new MyAdapter(list, selectFileActivity.this);
+                mAdapter = new MyAdapter(movingList, selectFileActivity.this);
                 // 绑定Adapter
                 lv.setAdapter(mAdapter);
             }
@@ -477,32 +532,64 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         Context mContext;
         ProgressDialog pdialog;
         String downloadPath;
+        String downname;
+        int myIndex;
 
-        public DownTask(Context ctx, String path) {
+        public DownTask(Context ctx, String path, String filename, int indexWhich) {
             mContext = ctx;
             downloadPath = path;
+            downname = filename;
+            myIndex = indexWhich;
+            Timer timer = new Timer(true);
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    movingList.get(myIndex).filename = downloadingFileName + " " + countValue + "%";
+
+                    mAdapter.notifyDataSetChanged();
+
+                }
+            };
+            timer.schedule(timerTask, 0, 2000);
+
         }
 
         protected void onPreExecute() {
+            downString = "";
+
             pdialog = new ProgressDialog(mContext);
-            pdialog.setTitle("任务正在执行中");
+            pdialog.setTitle("文件下载");
             pdialog.setMessage("正在下载中，敬请等待...");
             pdialog.setCancelable(false);
             pdialog.setMax(100);
             pdialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             pdialog.setIndeterminate(false);
-            pdialog.show();
+//            pdialog.show();
+
         }
 
         protected void onProgressUpdate(Long... values) {
+            pdialog.setTitle("文件：" + downloadingFileName);
+            pdialog.show();
             long a = Long.valueOf(values[0].toString());
             int value = (int) a;
-            System.out.println("进度：" + value);
+//            System.out.println("进度：" + value);
             pdialog.setProgress(value);
+            if (countValue > 100) {
+                countValue = 100;
+            }
+            tv_jindu.setText("文件" + downloadingFileName + "下载进度：" + countValue + "%" + downString
+            );
+//            (countValue==100?" 下载成功":" 下载中")
+
+
+
+
         }
 
         @Override
         protected Boolean doInBackground(String... Params) {
+            downString = "";
             ftpClient = new FTPClient();
             host = Params[0];
             portStr = Params[1];
@@ -521,15 +608,17 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
 
             if (ItemChooseData.getFilePath().size() > 0) {
                 System.out.println("xxxxx");
-                textb = download(downloadPath);
+                textb = download(downloadPath, downname);
 
             }
+
+
             return textb;
 
 
         }
 
-        boolean download(String myserverPath) {
+        boolean download(String myserverPath, String dname) {
             boolean flag = false;
             int port = Integer.parseInt(portStr);
             try {
@@ -555,7 +644,6 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 System.out.println("我的localPath：" + localPath);
                 // 接着判断下载的文件是否能断点下载
                 long serverSize = files[0].getSize(); // 获取远程文件的长度
-
                 System.out.println("文件长度：" + serverSize);
 
                 File localFile = new File(localPath);
@@ -588,8 +676,18 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                     if (currentSize / step != process) {
                         process = currentSize / step;//下载的百分比
 
-//                        System.out.println("文件已下载："+process);
+//                        System.out.println("文件"+myserverPath+"已下载："+process);
+                        System.out.println("文件" + dname + "已下载：" + (int) process);
+                        countValue = (int) process;//全局的下载进度
+                        downloadingFileName = dname;//全局的下载filename
 
+
+//                        for (int j = 0; j < movingList.size(); j++) {
+//                            if (movingList.get(j).filename == downloadingFileName) {
+//                                movingList.get(j).filename = movingList.get(j).filename + " " + countValue + "%";
+//
+//                            }
+//                        }
 
                         publishProgress(process);
                     }
@@ -609,21 +707,70 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 e.printStackTrace();
                 return false;
             } finally {
+
+                ItemChooseData.addDownloadSucOrFail(downloadingFileName, flag);//记录下载的文件名及是否下载成功。
+                //记得在回退到上级目录/退栈时，调用remove方法，清除记录的文件
+                downString = flag ? "成功" : "失败";
+
+
                 return flag;
             }
         }
 
         protected void onPostExecute(Boolean flag) {
             if (flag) {
+                countDown++;
+                downSucOrFail = true;
+//                downString = "success";
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //UI操作
+//                                tv_suc.setText(flag?"成功":"失败");
+//                                new Handler().postDelayed(new Runnable(){
+//                                    public void run() {
+//                                        tv_suc.setText("");
+//                                    }
+//                                }, 1000);
+
+
+                            }
+                        });
+                    }
+                }).start();
+
+
                 Toast tot = Toast.makeText(
                         mContext,
-                        "文件下载成功!",
+                        downloadingFileName + "成功!",
                         Toast.LENGTH_LONG);
                 tot.show();
             } else {
+                downSucOrFail = false;
+//                downString = "fail";
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //UI操作
+                                tv_suc.setText(flag ? "成功" : "失败");
+
+                            }
+                        });
+                    }
+                }).start();
+
+//                tv_suc.setText(downloadingFileName + "文件下载失败!");
+
                 new AlertDialog.Builder(mContext)
                         .setTitle("提示")
-                        .setMessage("抱歉，下载过程中出现错误，请重新尝试")
+                        .setMessage(downloadingFileName + "抱歉，下载过程中出现错误，请重新尝试")
                         .setPositiveButton("确定", null)
                         .show();
 

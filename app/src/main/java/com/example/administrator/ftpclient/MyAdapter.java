@@ -14,7 +14,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import com.example.administrator.ftpclient.ItemChooseData;
+
 /**
  * Created by dwb on 2018/1/3.
  * describe1:
@@ -78,6 +80,7 @@ public class MyAdapter extends BaseAdapter {
             holder.im = (ImageView) convertView.findViewById(R.id.file_icon);
             holder.cb = (CheckBox) convertView.findViewById(R.id.item_cb);
             holder.arro = (ImageView) convertView.findViewById(R.id.arrow);
+            holder.pb = (TextView) convertView.findViewById(R.id.item_pb);
 
             // 为view设置标签
             convertView.setTag(holder);
@@ -106,17 +109,21 @@ public class MyAdapter extends BaseAdapter {
                                                      if (!b) {
                                                          System.out.println("监测。。。");
                                                          //没选中的item，则从记录中删除对应的index
-                                                         if (selectFileActivity.currentFiles.get(position).isFile){
+                                                         if (selectFileActivity.currentFiles.get(position).isFile) {
                                                              ItemChooseData.removeIndex(position);
                                                              ItemChooseData.removeFilePath(position);
+                                                             ItemChooseData.removeFileName(position);
+
                                                          }
-                                                         System.out.println("q1:"+ItemChooseData.getFilePath().toString());
-                                                         System.out.println("位置1："+position);
+                                                         System.out.println("q1:" + ItemChooseData.getFilePath().toString());
+                                                         System.out.println("位置1：" + position);
                                                      } else {//选中的item，则记录他的index
                                                          //记录前，先判断选择的是否是文件，是则记录。非文件不记录
-                                                         if (selectFileActivity.currentFiles.get(position).isFile){
+                                                         if (selectFileActivity.currentFiles.get(position).isFile) {
                                                              ItemChooseData.addIndex(position);
                                                              ItemChooseData.addFilePath(selectFileActivity.currentFiles.get(position).filePath);
+                                                             ItemChooseData.addFileName(selectFileActivity.currentFiles.get(position).filename);
+
                                                          }
 
 
@@ -125,8 +132,10 @@ public class MyAdapter extends BaseAdapter {
 //                                                           new   selectFileActivity().whileDir(position);
 //                                                         }
 
-                                                         System.out.println("位置2："+position);
-                                                         System.out.println("q2:"+ItemChooseData.getFilePath().toString());
+                                                         System.out.println("位置2：" + position);
+                                                         System.out.println("q2:" + ItemChooseData.getFilePath().toString());
+                                                         System.out.println("q2222name:" + ItemChooseData.getFileName().toString());
+
 
                                                      }
                                                  }
@@ -149,5 +158,7 @@ public class MyAdapter extends BaseAdapter {
         public CheckBox cb;
         public ImageView im;
         public ImageView arro;
+        public TextView pb;//进度显示值
+
     }
 }

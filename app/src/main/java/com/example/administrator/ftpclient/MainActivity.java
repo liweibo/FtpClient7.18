@@ -126,8 +126,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.LENGTH_LONG);
             tot.show();
         } else if (v == findViewById(R.id.switch1)) {
-                haveCheck = !haveCheck;
+            if (switch1.isChecked()) {
+                haveCheck = true;
+            } else {
+                haveCheck = false;
             }
+            System.out.println("checkValue:"+haveCheck);
+        }
 
     }
 
@@ -141,11 +146,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         protected Boolean doInBackground(String... Params) {
 
-            if (haveCheck){
+            if (haveCheck) {
                 return checkLogin(8001);
 
-            }else
-            {
+            } else {
                 return nocheckLogin();
             }
 

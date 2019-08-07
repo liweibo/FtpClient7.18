@@ -35,6 +35,9 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private int mProgress = 0;
+    private RingProgressBar roundProgressBar;
     private Socket socket;
     OutputStream outputStream;
     InputStream is;
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        roundProgressBar = findViewById(R.id.ringProgressBar1);
         haveCheck = false;
         //申请权限
         //verifyStoragePermissions(this);
@@ -81,7 +85,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cancel.setOnClickListener(this);
         switch1.setOnClickListener(this);
 
-    }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mProgress < 100) {
+                    mProgress += 1;
+                    roundProgressBar.setProgress(mProgress);
+                    try {
+                        Thread.sleep(200);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+}
 
     @Override
     protected void onStart() {
@@ -131,56 +149,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 haveCheck = false;
             }
-            System.out.println("checkValue:"+haveCheck);
+            System.out.println("checkValue:" + haveCheck);
         }
 
     }
 
-    //处理登录的异步函数
-    class LogTask extends AsyncTask<String, Void, Boolean> {
-        Context mContext;
+//处理登录的异步函数
+class LogTask extends AsyncTask<String, Void, Boolean> {
+    Context mContext;
 
-        public LogTask(Context ctx) {
-            mContext = ctx;
+    public LogTask(Context ctx) {
+        mContext = ctx;
+    }
+
+    protected Boolean doInBackground(String... Params) {
+
+        if (haveCheck) {
+            return checkLogin(8001);
+
+        } else {
+            return nocheckLogin();
         }
-
-        protected Boolean doInBackground(String... Params) {
-
-            if (haveCheck) {
-                return checkLogin(8001);
-
-            } else {
-                return nocheckLogin();
-            }
-
-        }
-
-        protected void onPostExecute(Boolean flag) {
-            if (flag) {
-                Toast tot = Toast.makeText(
-                        mContext,
-                        "登录成功",
-                        Toast.LENGTH_LONG);
-                tot.show();
-                Intent intent = new Intent(MainActivity.this, selectFileActivity.class);
-                //准备进入选择界面并且准备好参数
-                intent.putExtra("host", host.getText().toString());
-                intent.putExtra("user", name.getText().toString());
-                intent.putExtra("pass", pass.getText().toString());
-                intent.putExtra("port", Integer.parseInt(port.getText().toString()));
-                startActivity(intent);
-            } else {
-                new AlertDialog.Builder(mContext)
-                        .setTitle("无法连接")
-                        .setMessage("请检查是否连接无线工装WIFI以及信息填写是否无误！")
-                        .setPositiveButton("确定", null)
-                        .show();
-
-            }
-        }
-
 
     }
+
+    protected void onPostExecute(Boolean flag) {
+        if (flag) {
+            Toast tot = Toast.makeText(
+                    mContext,
+                    "登录成功",
+                    Toast.LENGTH_LONG);
+            tot.show();
+            Intent intent = new Intent(MainActivity.this, selectFileActivity.class);
+            //准备进入选择界面并且准备好参数
+            intent.putExtra("host", host.getText().toString());
+            intent.putExtra("user", name.getText().toString());
+            intent.putExtra("pass", pass.getText().toString());
+            intent.putExtra("port", Integer.parseInt(port.getText().toString()));
+            startActivity(intent);
+        } else {
+            new AlertDialog.Builder(mContext)
+                    .setTitle("无法连接")
+                    .setMessage("请检查是否连接无线工装WIFI以及信息填写是否无误！")
+                    .setPositiveButton("确定", null)
+                    .show();
+
+        }
+    }
+
+
+}
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 1) {

@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import com.example.administrator.ftpclient.FtpUtils;
 import com.example.administrator.ftpclient.R;
+import com.example.administrator.ftpclient.RingProgressBar;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -38,6 +40,8 @@ public class MyAdapter extends BaseAdapter {
         isSelected = new HashMap<Integer, Boolean>();
         // 初始化数据
         initDate();
+
+
     }
 
     // 初始化isSelected的数据
@@ -71,7 +75,9 @@ public class MyAdapter extends BaseAdapter {
             // 导入布局并赋值给convertview
             convertView = inflater.inflate(R.layout.item_list, null);
             holder.tv = (TextView) convertView.findViewById(R.id.item_tv);
+            holder.item_tv_sucfail = (TextView) convertView.findViewById(R.id.item_tv_sucfail);
             holder.cb = (CheckBox) convertView.findViewById(R.id.item_cb);
+            holder.ringProgressBarAdapter = (RingProgressBar) convertView.findViewById(R.id.ringProgressBarAdapter);
             // 为view设置标签
             convertView.setTag(holder);
         } else {
@@ -83,6 +89,18 @@ public class MyAdapter extends BaseAdapter {
         holder.tv.setText((CharSequence) list.get(position));
         // 根据isSelected来设置checkbox的选中状况
         holder.cb.setChecked(getIsSelected().get(position));
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+//                    new ViewHolder().ringProgressBarAdapter.setProgress(mProgress);
+
+            }
+        }).start();
+
+
+
         return convertView;
     }
 
@@ -96,6 +114,8 @@ public class MyAdapter extends BaseAdapter {
 
     public static class ViewHolder {
         public TextView tv;
+        public TextView item_tv_sucfail;
         public CheckBox cb;
+        public RingProgressBar ringProgressBarAdapter;
     }
 }

@@ -80,7 +80,6 @@ public class MyAdapter extends BaseAdapter {
             holder.im = (ImageView) convertView.findViewById(R.id.file_icon);
             holder.cb = (CheckBox) convertView.findViewById(R.id.item_cb);
             holder.arro = (ImageView) convertView.findViewById(R.id.arrow);
-            holder.pb = (TextView) convertView.findViewById(R.id.item_pb);
 
             // 为view设置标签
             convertView.setTag(holder);
@@ -158,7 +157,6 @@ public class MyAdapter extends BaseAdapter {
         public CheckBox cb;
         public ImageView im;
         public ImageView arro;
-        public TextView pb;//进度显示值
 
     }
 }

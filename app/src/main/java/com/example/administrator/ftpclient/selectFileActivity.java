@@ -6,9 +6,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
@@ -26,11 +29,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cunoraz.gifview.library.GifView;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -57,12 +64,14 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
     private TextView tv_file_folder;
     private TextView tv_jindu;
     private TextView tv_suc;
-
+    public TextView itemTextView;
     private TextView tv_result;//用来显示具体选择的条目
     private List<Integer> checkList = new ArrayList<>();
     public static CheckBox checkbox_all;
     Button bt;
     public Button bttest;
+    public Button listfile;
+    public int dirSize = 0;
     boolean downSucOrFail;
     int countDown = 0;
     String downString = "";
@@ -73,7 +82,7 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-
+    GifView gifView1;
     FTPClient ftpClient;
     String portStr;
     String serverPath;
@@ -97,8 +106,13 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         tv_jindu = (TextView) findViewById(R.id.tv_jindu);
         tv_suc = (TextView) findViewById(R.id.tv_suc);
         bt = (Button) findViewById(R.id.parent);
+        listfile = (Button) findViewById(R.id.listfile);//下载列表详情
         bt.setOnClickListener(selectFileActivity.this);
         backDir = new ArrayList<>();
+
+
+        gifView1 = (GifView) findViewById(R.id.gif11);
+
 
         /* 实例化各个控件 */
         lv = (ListView) findViewById(R.id.lv);
@@ -132,7 +146,13 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             }
         });
 
-
+        listfile.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(selectFileActivity.this, FileListActivity.class);
+                startActivity(intent);
+            }
+        });
         //全选
         checkbox_all.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -196,14 +216,6 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
 
 
                     }
-
-//
-//                    System.out.println("size1：" + ItemChooseData.getDownloadSucOrFail().size());
-//
-//                    for (int i = 0; i < ItemChooseData.getDownloadSucOrFail().size(); i++) {
-//                        String ex = ItemChooseData.getDownloadSucOrFail().get(i).toString();
-//                        System.out.println("测试size：" + ex);
-//                    }
 
 
                 } else {
@@ -321,6 +333,15 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         }
 
         protected List<FtpUtils.wxhFile> doInBackground(String... Params) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    gifView1.setVisibility(View.VISIBLE);
+                    gifView1.play();
+                }
+            });
+
+
             String host = Params[0];
             String portStr = Params[1];
             String user = Params[2];
@@ -365,6 +386,8 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                     list.remove(removeFileIndex.get(i));//删除所有的文件
                 }
 
+                dirSize = list.size();//文件夹的个数
+
                 System.out.println("文件夹个数：" + list.size());
                 list.addAll(listFile);//文件夹与文件集合的拼接
                 System.out.println("拼接后个数：" + list.size());
@@ -395,7 +418,15 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 new AlertDialog.Builder(mContext)
                         .setTitle("提示")
                         .setMessage("该文件夹为空文件夹！")
-                        .setPositiveButton("确定", null)
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                gifView1.setVisibility(View.INVISIBLE);
+                                gifView1.pause();
+
+                            }
+                        })
                         .show();
 
             } else {
@@ -409,18 +440,23 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 //调用刷新来显示我们的列表
 //                inflateListView(list,parentPath);
 
-//                for (int i = 0; i < movingList.size(); i++) {
-//                    if (movingList.get(i).filename == downloadingFileName) {
-//                        movingList.get(i).filename = movingList.get(i).filename + " " + countValue + "%";
-//
-//                    }
-//                }
+                for (int i = 0; i < movingList.size(); i++) {
+                    System.out.println("遍历：" + movingList.get(i).filename);
+                }
 
 
                 // 实例化自定义的MyAdapter
                 mAdapter = new MyAdapter(movingList, selectFileActivity.this);
                 // 绑定Adapter
                 lv.setAdapter(mAdapter);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        gifView1.pause();
+                        gifView1.setVisibility(View.INVISIBLE);
+                    }
+                });
             }
 
         }
@@ -435,6 +471,15 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
         }
 
         protected List<FtpUtils.wxhFile> doInBackground(String... Params) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    gifView1.setVisibility(View.VISIBLE);
+                    gifView1.play();
+
+                }
+            });
+
             String host = Params[0];
             String portStr = Params[1];
             String user = Params[2];
@@ -507,13 +552,22 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 new AlertDialog.Builder(mContext)
                         .setTitle("提示")
                         .setMessage("该文件夹为空文件夹！")
-                        .setPositiveButton("确定", null)
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                        gifView1.setVisibility(View.INVISIBLE);
+                                        gifView1.pause();
+
+                            }
+                        })
                         .show();
 
             } else {
                 System.out.println("找到了！！");
                 //更新文件list
                 currentFiles = list;
+                movingList = list;
                 System.out.println("刚开始的父路径：" + list.get(0).filePath);
                 //调用刷新来显示我们的列表
 //                inflateListView(list,parentPath);
@@ -522,6 +576,15 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 mAdapter = new MyAdapter(list, selectFileActivity.this);
                 // 绑定Adapter
                 lv.setAdapter(mAdapter);
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        gifView1.setVisibility(View.INVISIBLE);
+                        gifView1.pause();
+
+                    }
+                });
             }
 
         }
@@ -540,23 +603,11 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             downloadPath = path;
             downname = filename;
             myIndex = indexWhich;
-            Timer timer = new Timer(true);
-            TimerTask timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    movingList.get(myIndex).filename = downloadingFileName + " " + countValue + "%";
 
-                    mAdapter.notifyDataSetChanged();
-
-                }
-            };
-            timer.schedule(timerTask, 0, 2000);
 
         }
 
         protected void onPreExecute() {
-            downString = "";
-
             pdialog = new ProgressDialog(mContext);
             pdialog.setTitle("文件下载");
             pdialog.setMessage("正在下载中，敬请等待...");
@@ -565,11 +616,20 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             pdialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             pdialog.setIndeterminate(false);
 //            pdialog.show();
-
+            if (countValue == 100) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        itemTextView.setVisibility(View.VISIBLE);
+                        itemTextView.setText("成功");
+                        itemTextView.setTextColor(Color.rgb(0, 152, 253));
+                    }
+                });
+            }
         }
 
         protected void onProgressUpdate(Long... values) {
-            pdialog.setTitle("文件：" + downloadingFileName);
+            pdialog.setTitle("文件:" + downloadingFileName);
             pdialog.show();
             long a = Long.valueOf(values[0].toString());
             int value = (int) a;
@@ -578,18 +638,24 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
             if (countValue > 100) {
                 countValue = 100;
             }
-            tv_jindu.setText("文件" + downloadingFileName + "下载进度：" + countValue + "%" + downString
-            );
-//            (countValue==100?" 下载成功":" 下载中")
-
-
+            if (countValue == 100) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        itemTextView.setVisibility(View.VISIBLE);
+                        itemTextView.setText("成功");
+                        itemTextView.setTextColor(Color.rgb(0, 152, 253));
+                    }
+                });
+            }
+//            tv_jindu.setText("文件" + downloadingFileName + "下载进度：" + countValue + "%" + downString
+//            );
 
 
         }
 
         @Override
         protected Boolean doInBackground(String... Params) {
-            downString = "";
             ftpClient = new FTPClient();
             host = Params[0];
             portStr = Params[1];
@@ -681,13 +747,55 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                         countValue = (int) process;//全局的下载进度
                         downloadingFileName = dname;//全局的下载filename
 
+                        //把某个正在下载的文件名  进度 实时传给进度组件，文件名可以得出在勾选列表中的正在下载的文件位置，
+//                        再把文件位置传给listview  用来展示列表中某个位置进度组件的可见性。
 
-//                        for (int j = 0; j < movingList.size(); j++) {
-//                            if (movingList.get(j).filename == downloadingFileName) {
-//                                movingList.get(j).filename = movingList.get(j).filename + " " + countValue + "%";
-//
-//                            }
-//                        }
+                        int whereInt = 0;//listview中正在下载文件的index位置。
+                        for (int i = 0; i < movingList.size(); i++) {
+                            System.out.println("文件名查找：" + movingList.get(i).filename);
+
+                            if (movingList.get(i).filename == downloadingFileName) {
+//                                if (dirSize > 0) {
+//                                    whereInt = i + dirSize;
+//                                } else {
+                                whereInt = i;
+                                break;
+//                                }
+                            }
+                        }
+
+                        System.out.println("文件名123：" + whereInt);
+
+                        if (whereInt >= lv.getFirstVisiblePosition() &&
+                                whereInt <= lv.getLastVisiblePosition()) {
+                            int positionInListView = whereInt - lv.getFirstVisiblePosition();
+                            System.out.println("positionInListView:" + positionInListView);
+                            RingProgressBar item = (RingProgressBar) lv.getChildAt(positionInListView)
+                                    .findViewById(R.id.ringProgressBarAdapter);
+
+                            itemTextView = (TextView) lv.getChildAt(positionInListView)//展示成功 失败的文本
+                                    .findViewById(R.id.item_tv_sucfail);
+
+                            if (countValue > 100) {
+                                countValue = 100;
+                            }
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    item.setVisibility(View.VISIBLE);
+                                    if (countValue == 100) {
+                                                itemTextView.setVisibility(View.VISIBLE);
+                                                itemTextView.setText("成功");
+                                                itemTextView.setTextColor(Color.rgb(0, 152, 253));
+                                    }
+                                }
+                            });
+
+
+                            item.setProgress(countValue);
+
+                        }
+
 
                         publishProgress(process);
                     }
@@ -708,72 +816,76 @@ public class selectFileActivity extends AppCompatActivity implements OnClickList
                 return false;
             } finally {
 
-                ItemChooseData.addDownloadSucOrFail(downloadingFileName, flag);//记录下载的文件名及是否下载成功。
-                //记得在回退到上级目录/退栈时，调用remove方法，清除记录的文件
-                downString = flag ? "成功" : "失败";
 
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd/ HH:mm:ss");// HH:mm:ss
+                Date date = new Date(System.currentTimeMillis());
+                System.out.println("Date获取当前日期时间:" + simpleDateFormat.format(date));
+                ItemChooseData.addDownloadSucOrFail(downloadingFileName + "   " + simpleDateFormat.format(date), flag);//记录下载的文件名及是否下载成功。
 
                 return flag;
             }
         }
 
         protected void onPostExecute(Boolean flag) {
-            if (flag) {
-                countDown++;
-                downSucOrFail = true;
-//                downString = "success";
-                new Thread(new Runnable() {
+
+            if (flag && countValue >= 100) {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //UI操作
-//                                tv_suc.setText(flag?"成功":"失败");
-//                                new Handler().postDelayed(new Runnable(){
-//                                    public void run() {
-//                                        tv_suc.setText("");
-//                                    }
-//                                }, 1000);
-
-
-                            }
-                        });
+                        itemTextView.setVisibility(View.VISIBLE);
+                        itemTextView.setText("成功");
+                        itemTextView.setTextColor(Color.rgb(0, 152, 253));
                     }
-                }).start();
+                });
 
+                countDown++;
+                downSucOrFail = true;
 
                 Toast tot = Toast.makeText(
                         mContext,
-                        downloadingFileName + "成功!",
-                        Toast.LENGTH_LONG);
+                        downloadingFileName + "下载成功!",
+                        Toast.LENGTH_SHORT);
                 tot.show();
-            } else {
-                downSucOrFail = false;
-//                downString = "fail";
-
-                new Thread(new Runnable() {
+            } else if (!flag) {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //UI操作
-                                tv_suc.setText(flag ? "成功" : "失败");
-
-                            }
-                        });
+                        itemTextView.setVisibility(View.VISIBLE);
+                        itemTextView.setText("失败");
+                        itemTextView.setTextColor(Color.rgb(255, 0, 0));
                     }
-                }).start();
+                });
 
-//                tv_suc.setText(downloadingFileName + "文件下载失败!");
-
+                downSucOrFail = false;
                 new AlertDialog.Builder(mContext)
                         .setTitle("提示")
                         .setMessage(downloadingFileName + "抱歉，下载过程中出现错误，请重新尝试")
                         .setPositiveButton("确定", null)
                         .show();
 
+            } else if (countValue == 100) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        itemTextView.setVisibility(View.VISIBLE);
+                        itemTextView.setText("成功");
+                        itemTextView.setTextColor(Color.rgb(0, 152, 253));
+                    }
+                });
+                Toast tot = Toast.makeText(
+                        mContext,
+                        downloadingFileName + "下载成功!",
+                        Toast.LENGTH_SHORT);
+                tot.show();
+            } else {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        itemTextView.setVisibility(View.VISIBLE);
+                        itemTextView.setText("失败");
+                        itemTextView.setTextColor(Color.rgb(255, 0, 0));
+                    }
+                });
             }
             pdialog.dismiss();
         }

@@ -22,6 +22,8 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.cunoraz.gifview.library.GifView;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
@@ -66,6 +68,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         roundProgressBar = findViewById(R.id.ringProgressBar1);
         haveCheck = false;
+
+//        GifView gifView1 = (GifView) findViewById(R.id.gif11);
+//        gifView1.setVisibility(View.VISIBLE);
+//        gifView1.play();
+
+
+
+
         //申请权限
         //verifyStoragePermissions(this);
         int hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:android_custom="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="fill_parent"
-    android:layout_height="50dp">
+    android:layout_height="wrap_content">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="52dp"
         android:layout_gravity="center"
         android:orientation="horizontal">
 
@@ -24,27 +26,37 @@
             android:layout_marginLeft="10dp"
             android:layout_weight="1"
             android:text=""
-            android:textSize="20dp" />
+            android:textSize="16dp" />
+
+        <com.example.administrator.ftpclient.RingProgressBar
+            android:id="@+id/ringProgressBarAdapter"
+            android:visibility="invisible"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="10dp"
+            android:layout_gravity="center_vertical"
+
+            android:gravity="center_vertical"
+            android:layout_marginRight="10dp"
+            android_custom:rProgressColor="#0098fd"
+            android_custom:rTextColor="#0098fd"
+            android_custom:rTextSize="8sp" />
+
         <TextView
-            android:id="@+id/item_pb"
+            android:id="@+id/item_tv_sucfail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="10dp"
-            android:text=""
-            android:textColor="#0097A7"
-            android:textSize="20dp" />
-        <TextView
-            android:id="@+id/item_pbpercent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="10dp"
-            android:text="%"
-            android:textColor="#0097A7"
-            android:textSize="20dp" />
+            android:layout_marginRight="5dp"
+            android:text="成功"
+            android:visibility="invisible"
+            android:textColor="#0098fd"
+            android:textSize="12dp" />
         <CheckBox
             android:id="@+id/item_cb"
+            android:layout_gravity="center_vertical"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="5dp"
@@ -61,7 +73,6 @@
         android:layout_height="20dp"
         android:layout_gravity="right|center"
         android:layout_marginRight="12dp"
-        android:visibility="invisible"
         android:background="@mipmap/arro"
-        />
+        android:visibility="invisible" />
 </FrameLayout>

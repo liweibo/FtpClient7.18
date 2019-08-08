@@ -11,21 +11,24 @@ public class ItemChooseData {
     private static List<String> listFilePath = new ArrayList<>();
     public static List<String> listFilename = new ArrayList<>();
     public static List<Map<String, Boolean>> fileDownloadSucOrFail = new ArrayList<>();
+    public static List<String> fileDownloadSucOrFailName = new ArrayList<>();
+    public static List<Boolean> fileDownloadSucOrFailTrueOrfalse = new ArrayList<>();
 
     public static void addDownloadSucOrFail(String file, boolean sucOrFail) {//记录文件是否下载成功
-        Map<String, Boolean> va = new HashMap<>();
-        va.put(file, sucOrFail);
-        fileDownloadSucOrFail.add(va);
-    }
-    public static List<Map<String, Boolean>> getDownloadSucOrFail() {//获取fileDownloadSucOrFail
-       return fileDownloadSucOrFail;
+        fileDownloadSucOrFailName.add(file);
+        fileDownloadSucOrFailTrueOrfalse.add(sucOrFail);
     }
 
-    public static void removeDownloadSucOrFail(String file, boolean sucOrFail) {//删除记录的文件是否下载成功值
-        getDownloadSucOrFail().clear();
+    public static List<Boolean> getDownloadSucOrFailIsTrueOrFalse() {
+        return fileDownloadSucOrFailTrueOrfalse;
     }
 
-
+    public static List<String> getDownloadSucOrFailNamew() {
+        return fileDownloadSucOrFailName;
+    }
+//    public static void removeDownloadSucOrFail(String file, boolean sucOrFail) {//删除记录的文件是否下载成功值
+//        getDownloadSucOrFail().clear();
+//    }
 
 
     public static void removeIndex(int i) {

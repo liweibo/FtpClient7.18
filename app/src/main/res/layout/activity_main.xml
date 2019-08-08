@@ -1,86 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:android_custom="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainBackgroud"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.administrator.ftpclient.MainActivity"
-    android:orientation="vertical"
-    android:id="@+id/mainBackgroud"
     android:background="@mipmap/background"
-    >
+    android:orientation="vertical"
+    tools:context="com.example.administrator.ftpclient.MainActivity">
+
     <ImageView
         android:id="@+id/login_avatar"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:src="@mipmap/login_icon"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="48dp"/>
+        android:layout_marginTop="48dp"
+        android:src="@mipmap/login_icon" />
 
     <EditText
+        android:text="10.0.1.5"
         android:id="@+id/login_host"
         android:layout_width="320dp"
         android:layout_height="38dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
-        android:paddingLeft="8dp"
         android:background="@color/colorLoginEditText"
         android:hint="@string/textlogin_host"
-        android:inputType="textUri" />
+        android:inputType="textUri"
+        android:paddingLeft="8dp" />
+
     <EditText
+        android:text="21"
         android:id="@+id/login_port"
         android:layout_width="320dp"
         android:layout_height="38dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:paddingLeft="8dp"
         android:background="@color/colorLoginEditText"
         android:hint="@string/textlogin_port"
-        android:inputType="number"/>
+        android:inputType="number"
+        android:paddingLeft="8dp" />
 
     <EditText
+        android:text="CSR"
         android:id="@+id/login_id"
         android:layout_width="320dp"
         android:layout_height="38dp"
         android:layout_gravity="center_horizontal"
-        android:paddingLeft="8dp"
         android:layout_marginTop="10dp"
         android:background="@color/colorLoginEditText"
         android:hint="@string/textlogin_id"
-        />
+        android:paddingLeft="8dp" />
 
     <EditText
+        android:text="12345678"
         android:id="@+id/login_password"
         android:layout_width="320dp"
         android:layout_height="38dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:paddingLeft="8dp"
         android:background="@color/colorLoginEditText"
         android:hint="@string/textlogin_password"
-        android:inputType="textPassword"/>
+        android:inputType="textPassword"
+        android:paddingLeft="8dp" />
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="center_horizontal">
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal">
+
         <Button
             android:id="@+id/login_button"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:text="@string/text_loginbutton"
-            android:textSize="20dp"
             android:background="@color/colorlogin_background"
-            android:textColor="@color/colorLoginEditText"/>
+            android:text="@string/text_loginbutton"
+            android:textColor="@color/colorLoginEditText"
+            android:textSize="20dp" />
+
         <Button
             android:id="@+id/cancel_button"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:text="@string/text_cancelbutton"
-            android:textSize="20dp"
             android:layout_marginLeft="20dp"
             android:background="@color/colorlogin_background"
-            android:textColor="@color/colorLoginEditText"/>
+            android:text="@string/text_cancelbutton"
+            android:textColor="@color/colorLoginEditText"
+            android:textSize="20dp" />
     </LinearLayout>
 
     <Switch
@@ -92,4 +100,23 @@
         android:layout_marginRight="20dp"
         android:text="校验"
         tools:checked="false" />
+
+    <com.example.administrator.ftpclient.RingProgressBar
+        android:id="@+id/ringProgressBar1"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="30dp"
+        android_custom:rProgressColor="#0098fd"
+        android_custom:rTextColor="#0098fd"
+        android_custom:rTextSize="11sp"
+
+        />
+
+    <!--<com.cunoraz.gifview.library.GifView-->
+        <!--android:layout_marginTop="10dp"-->
+        <!--android:id="@+id/gif1"-->
+        <!--android:layout_width="150dp"-->
+        <!--android:layout_height="100dp"-->
+        <!--android:background="#f00"-->
+        <!--android_custom:gif="@mipmap/gif_load" />-->
 </LinearLayout>

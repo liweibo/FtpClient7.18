@@ -1,73 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/rela"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:android_custom="http://schemas.android.com/apk/res-auto"
+
+    android:id="@+id/rela111"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="horizontal">
+    android:layout_height="fill_parent">
 
-    <LinearLayout
-        android:id="@+id/lll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
 
-        <TextView
-
-            android:id="@+id/tv_file_folder"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="10dp"
-            android:layout_weight="1"
-            android:text="请选择需要下载的文件或文件夹：" />
-
-        <CheckBox
-            android:id="@+id/checkbox_all"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:clickable="true"
-            android:text="全选" />
-    </LinearLayout>
-
-    <ListView
-        android:id="@+id/lv"
+    <RelativeLayout
+        android:id="@+id/rela"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_below="@+id/tv_suc" />
-
-    <LinearLayout
-        android:id="@+id/llbtn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/lll"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/bttest"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/lll"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="下载" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/parent"
-            android:layout_width="wrap_content"
+            <TextView
+
+                android:id="@+id/tv_file_folder"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:text="请选择需要下载的文件或文件夹：" />
+
+            <CheckBox
+                android:id="@+id/checkbox_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"
+                android:clickable="true"
+                android:text="全选" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/lv"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/tv_suc" />
+
+        <LinearLayout
+            android:id="@+id/llbtn"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="返回上级目录" />
+            android:layout_below="@+id/lll"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/bttest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="下载" />
+
+            <Button
+                android:id="@+id/parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="返回上级目录" />
+
+            <Button
+                android:id="@+id/listfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="list" />
+
+            <TextView
+                android:id="@+id/tv_jindu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="11" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/tv_jindu"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="11" />
-    </LinearLayout>
 
-    <TextView
+            android:id="@+id/tv_suc"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_below="@+id/llbtn"
+            android:text="11000" />
+    </RelativeLayout>
 
-        android:layout_below="@+id/llbtn"
-        android:id="@+id/tv_suc"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:text="11000" />
-</RelativeLayout>
+    <com.cunoraz.gifview.library.GifView
+        android:id="@+id/gif11"
+        android:layout_width="180dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android_custom:gif="@mipmap/gif_load" />
+</FrameLayout>
